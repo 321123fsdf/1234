@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍀 행운의 로또 번호 추첨기</title>
+    <!-- EmailJS SDK 로드 -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            width: 100%;
+            max-width: 420px;
+            padding: 35px 30px;
+            text-align: center;
+            border: 1px solid #f1f5f9;
+        }
+
+        .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+
+        .description {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #f8fafc;
+        }
+
+        input[type="email"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+            background-color: #ffffff;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* 로딩 애니메이션 */
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 고급 설정 메뉴 (숨김 처리) */
+        .settings-container {
+            display: none; /* 설정 영역 전체 숨김 */
+        }
+
+        .settings-toggle {
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .settings-content {
+            display: none;
+            text-align: left;
+            margin-top: 15px;
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .settings-content.show {
+            display: block;
+        }
+
+        .settings-content label {
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .settings-content input {
+            font-size: 13px;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .guide-box {
+            background-color: #f0fdf4;
+            border-left: 3px solid #22c55e;
+            padding: 10px;
+            margin-top: 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #166534;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="icon">🍀</div>
+    <h1>행운의 로또 번호 추첨</h1>
+    <p class="description">
+        이메일을 입력하고 아래 버튼을 누르면 즉시 번호가 추첨되어 이메일로 발송됩니다.<br>
+        <span class="highlight">(개인정보 보호를 위해 당첨 번호는 화면에 전혀 노출되지 않습니다)</span>
+    </p>
+
+    <form id="lottoForm" onsubmit="handleFormSubmit(event)">
+        <!-- 수신 이메일 입력 -->
+        <div class="form-group">
+            <label for="toEmail">받으실 이메일 주소</label>
+            <input type="email" id="toEmail" placeholder="your-email@example.com" required>
+        </div>
+
+        <!-- 전송 버튼 -->
+        <button type="submit" id="submitBtn" class="btn">
+            <span id="btnSpinner" class="loading-spinner hidden"></span>
+            <span id="btnText">행운의 번호 무료 추첨 및 이메일 전송</span>
+        </button>
+    </form>
+
+    <!-- EmailJS 연동 설정 (화면에서 숨김 처리됨) -->
+    <div class="settings-container">
+        <button type="button" class="settings-toggle" onclick="toggleSettings()">⚙️ EmailJS 연동 정보 변경하기</button>
+        <div class="settings-content" id="settingsContent">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label for="emailjsPublicKey">EmailJS Public Key</label>
+                <input type="text" id="emailjsPublicKey" value="Y6CTNyk_MCAQBdqS2" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label for="emailjsServiceId">EmailJS Service ID</label>
+                <input type="text" id="emailjsServiceId" value="service_8pnj4qb" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label for="emailjsTemplateId">EmailJS Template ID (Service ID와 동일 설정됨)</label>
+                <input type="text" id="emailjsTemplateId" value="template_bluxv4z" required>
+            </div>
+            <div class="guide-box">
+                <strong>💡 EmailJS 템플릿 변수 팁:</strong><br>
+                템플릿에 다음을 기입하여 자동 매핑할 수 있습니다.<br>
+                <code>{{num1}}</code> ~ <code>{{num6}}</code> (오름차순 1~6번 번호)<br>
+                <code>{{bonus}}</code> (보너스 번호)<br>
+                <code>{{to_email}}</code> (수신자 이메일)
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 전역 변수로 저장할 추첨 데이터
+    let currentLottoNumbers = null;
+
+    // --- 요구사항: 번호들은 개별 함수로 지정해서 가져오도록 설계 ---
+    function getNumber1() { return currentLottoNumbers ? currentLottoNumbers['1번 번호'] : null; }
+    function getNumber2() { return currentLottoNumbers ? currentLottoNumbers['2번 번호'] : null; }
+    function getNumber3() { return currentLottoNumbers ? currentLottoNumbers['3번 번호'] : null; }
+    function getNumber4() { return currentLottoNumbers ? currentLottoNumbers['4번 번호'] : null; }
+    function getNumber5() { return currentLottoNumbers ? currentLottoNumbers['5번 번호'] : null; }
+    function getNumber6() { return currentLottoNumbers ? currentLottoNumbers['6번 번호'] : null; }
+    function getBonusNumber() { return currentLottoNumbers ? currentLottoNumbers['보너스 번호'] : null; }
+
+    /**
+     * 로또 번호 추첨 함수
+     * 1~45 사이의 중복 없는 메인 번호 6개와 보너스 번호 1개를 생성합니다.
+     * 메인 번호 6개는 오름차순으로 정렬됩니다.
+     * 결과는 "1번 번호" ~ "6번 번호", "보너스 번호" 형태로 객체에 저장하여 반환합니다.
+     */
+    function drawLottoNumbers() {
+        const pool = Array.from({ length: 45 }, (_, i) => i + 1);
+        const mainNumbers = [];
+        
+        // 6개 번호 추출 (중복 완전 방지)
+        for (let i = 0; i < 6; i++) {
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            mainNumbers.push(pool[randomIndex]);
+            pool.splice(randomIndex, 1); // 추출 후 풀에서 완전히 제거
+        }
+        
+        // 메인 번호 오름차순 정렬
+        mainNumbers.sort((a, b) => a - b);
+        
+        // 보너스 번호 추출 (남은 39개 숫자 중 1개 선택 - 메인 번호와 중복 불가)
+        const bonusRandomIndex = Math.floor(Math.random() * pool.length);
+        const bonusNumber = pool[bonusRandomIndex];
+        
+        // 요구사항에 맞춰 "1번 번호" ~ "6번 번호" 및 "보너스 번호"로 저장
+        return {
+            '1번 번호': mainNumbers[0],
+            '2번 번호': mainNumbers[1],
+            '3번 번호': mainNumbers[2],
+            '4번 번호': mainNumbers[3],
+            '5번 번호': mainNumbers[4],
+            '6번 번호': mainNumbers[5],
+            '보너스 번호': bonusNumber
+        };
+    }
+
+    /**
+     * 설정 영역 토글 함수
+     */
+    function toggleSettings() {
+        const content = document.getElementById('settingsContent');
+        content.classList.toggle('show');
+    }
+
+    /**
+     * 폼 제출 및 이메일 전송 처리기
+     */
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+
+        const toEmail = document.getElementById('toEmail').value.trim();
+        const publicKey = document.getElementById('emailjsPublicKey').value.trim();
+        const serviceId = document.getElementById('emailjsServiceId').value.trim();
+        const templateId = document.getElementById('emailjsTemplateId').value.trim();
+
+        if (!publicKey || !serviceId || !templateId) {
+            alert("⚠️ EmailJS 연동 설정을 확인해주세요.");
+            return;
+        }
+
+        // 로컬 스토리지에 이메일 자동 저장 (편의성)
+        localStorage.setItem('last_used_email', toEmail);
+
+        // UI 로딩 처리
+        const submitBtn = document.getElementById('submitBtn');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const btnText = document.getElementById('btnText');
+
+        submitBtn.disabled = true;
+        btnSpinner.classList.remove('hidden');
+        btnText.textContent = "추첨 및 메일 전송 중...";
+
+        try {
+            // 1. 번호 추첨 실행 및 전역 상태에 저장 (함수형 접근 지원)
+            currentLottoNumbers = drawLottoNumbers();
+
+            // 2. EmailJS 초기화
+            emailjs.init({
+                publicKey: publicKey
+            });
+
+            // 3. EmailJS 파라미터 구성 (한국어 키 및 영문 키 호환성 극대화)
+            const templateParams = {
+                to_email: toEmail,
+                
+                // 한국어 템플릿 변수용
+                '1번 번호': getNumber1(),
+                '2번 번호': getNumber2(),
+                '3번 번호': getNumber3(),
+                '4번 번호': getNumber4(),
+                '5번 번호': getNumber5(),
+                '6번 번호': getNumber6(),
+                '보너스 번호': getBonusNumber(),
+
+                // 영문 템플릿 변수용
+                num1: getNumber1(),
+                num2: getNumber2(),
+                num3: getNumber3(),
+                num4: getNumber4(),
+                num5: getNumber5(),
+                num6: getNumber6(),
+                bonus: getBonusNumber()
+            };
+
+            // 4. 이메일 전송
+            await emailjs.send(serviceId, templateId, templateParams);
+
+            // 5. 성공 시 안내 팝업 출력 (요구사항 문구 정확하게 적용)
+            alert("행운의 번호 전송 완료됬습니다.");
+
+        } catch (error) {
+            console.error("이메일 발송 오류:", error);
+            alert(`⚠️ 이메일 전송에 실패했습니다.\n오류내용: ${error.text || error.message || error}`);
+        } finally {
+            // UI 복구
+            submitBtn.disabled = false;
+            btnSpinner.classList.add('hidden');
+            btnText.textContent = "행운의 번호 무료 추첨 및 이메일 전송";
+        }
+    }
+
+    // 기존 입력값 복구 (이메일 한정)
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedEmail = localStorage.getItem('last_used_email');
+        if (savedEmail) {
+            document.getElementById('toEmail').value = savedEmail;
+        }
+    });
+</script>
+
+</body>
+</html>
